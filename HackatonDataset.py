@@ -11,8 +11,8 @@ class HackatonDataset(utils.data.Dataset):
         "labels" : np.array[N]
     }
     """
-    def __init__(self, preparedData, trasform=None):
-        self.transform = trasform
+    def __init__(self, preparedData, transform=None):
+        self.transform = transform
         self.data = preparedData["data"]
         self.targets = preparedData["labels"]
 
@@ -34,7 +34,7 @@ class HackatonDataset(utils.data.Dataset):
     def __getitem__(self, index):
         sample = (
             torch.tensor( self.data[index], dtype=torch.float ),
-            torch.tensor( self.targets[index], dtype=torch.float)
+            torch.tensor( self.targets[index], dtype=torch.long)
         )
 
         if self.transform:

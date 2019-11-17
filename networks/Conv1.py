@@ -19,7 +19,7 @@ class Conv1Net(nn.Module):
 
         self.fc1 = nn.Linear(in_features=64*62, out_features=128)
         self.fc2 = nn.Linear(in_features=128, out_features=128)
-        self.fc3 = nn.Linear(in_features=128, out_features=3)
+        self.fc3 = nn.Linear(in_features=128, out_features=5)
 
     """
     x - Tensor[batch_size, 8, 2000]

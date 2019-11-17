@@ -9,6 +9,9 @@ from Labels import Labels
 DATASETS_DIR = "datasets/"
 
 def readAll(dir):
+    labels_stat = [0] * len(Labels.all)
+    print("Labels_stat len is {}".format(len(labels_stat)))
+
     for root, dr, files in os.walk(dir):
         g_data = np.empty(shape=(len(files), 8, 2000), dtype=float)
         g_label = np.empty(shape=(len(files)), dtype=int)
@@ -22,11 +25,18 @@ def readAll(dir):
             for name, label in Labels.all.items():
                 if name in file:
                     g_label[i] = label
+                    labels_stat[label] += 1
                     print("File: {} Label: {}".format(
                         file, label
                     ))
                     break
             i += 1
+
+        print("Статистика по данным в датасете: ")
+        for name, label in Labels.all.items():
+            print("Кол-во меток {} = {}".format(
+                name, labels_stat[label]
+            ))
 
         data = {
             "data": g_data,

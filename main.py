@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from HackatonDataset import HackatonDataset
 
 from networks.Conv1 import Conv1Net
+from augmentations import Transforms
 
 def train(model, device, train_loader, optimizer, epoch):
     model.train()
@@ -49,14 +50,41 @@ def test(model, device, test_loader):
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
+def prepareDataset( dataset_path,
+                    train_part=0.7):
+    sourceDataset = dataset = HackatonDataset.Load(dataset_path)
 
+    trainLen = int(train_part * len(sourceDataset))
 
-DATASET1_PATH = "datasets/BigDataset3Class.pickle"
+    trainData = {
+        "data" : sourceDataset.data[0:trainLen],
+        "labels" : sourceDataset.targets[0:trainLen]
+    }
+
+    testData = {
+        "data" : sourceDataset.data[trainLen:],
+        "labels" : sourceDataset.targets[trainLen:]
+    }
+
+    trainDataset = HackatonDataset(trainData)
+    testDataset =  HackatonDataset(testData)
+
+    #рассчитать статистику по тренировочному! датасету
+    reshapedTrain = np.transpose(trainDataset.data, (1, 0, 2)).reshape(8, -1)
+    train_mean = np.mean(reshapedTrain, axis=-1)
+    train_std = np.std(reshapedTrain, axis=-1)
+
+    #   возвращаем два датасета и статистику по тренировочному
+    return trainDataset, testDataset, train_mean, train_std
+
+DATASET1_PATH = "datasets/BigDataset5Class.pickle"
 #DATASET2_PATH = "datasets/VladDatasetV2.pickle"
 TRAIN_PART = 0.7
 
 def main():
-    dataset = HackatonDataset.Load(DATASET1_PATH)
+
+    '''
+    dataset = HackatonDataset.Load(DATASET1_PATH, transform=Transforms.AddNoise(0.035))
     #dataset2 = HackatonDataset.Load(DATASET2_PATH)
 
     dataToAnalyze = np.transpose(dataset.data, (1, 0, 2)).reshape(8, -1)
@@ -74,11 +102,25 @@ def main():
 
     trainDataset = utils.data.Subset(dataset, range(0, int(0.7 * len(dataset))) )
     testDataset = utils.data.Subset(dataset, range(int(0.7 * len(dataset)), len(dataset)))
+    '''
+
+    trainDataset, testDataset, train_mean, train_std = prepareDataset(DATASET1_PATH, 0.7)
+    # Это потом должно делаться с помощью трансформов!
+    '''trainDataset.data -= np.expand_dims(train_mean, 1)
+    trainDataset.data /= np.expand_dims(train_std, 1)
+    testDataset.data -= np.expand_dims(train_mean, 1)
+    testDataset.data /= np.expand_dims(train_std, 1)'''
+    trainDataset.transform = Transforms.Compose([
+        Transforms.Normalize(train_mean, train_std),
+        Transforms.AddNoise(0.035),
+        Transforms.ShiftAndCrop(100,100)
+    ])
+    testDataset.transform = Transforms.Normalize(train_mean, train_std)
 
     device = torch.device('cuda')
     kwargs = {'num_workers': 1, 'pin_memory': True}
 
-    trainLoader = utils.data.DataLoader(trainDataset, shuffle=True, batch_size=32, **kwargs)
+    trainLoader = utils.data.DataLoader(trainDataset, shuffle=True, batch_size=64, **kwargs)
     testLoader = utils.data.DataLoader(testDataset, shuffle=False, batch_size=64, **kwargs)
     #test2Loader = utils.data.DataLoader(dataset2, shuffle=False, batch_size=8, **kwargs)
 
