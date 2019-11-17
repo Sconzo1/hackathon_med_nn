@@ -5,7 +5,7 @@ import time
 from Labels import Labels
 
 #   Текущая метка данных - куда поворачиваем кисть
-CURRENT_LABEL = Labels.TurnRight
+CURRENT_LABEL = Labels.TurnDown
 
 #   директория, куда будут складываться сырые данные
 RAW_DATA_DIR = "./rawdata/"
@@ -22,7 +22,7 @@ SAMPLES_PER_AQUISITION = 2000
 print("Кол-во сэмплов на один замер: {}".format( SAMPLES_PER_AQUISITION ))
 
 ser = serial.Serial(
-port='COM3',
+port='COM4',
 baudrate=921600,
 parity=serial.PARITY_NONE,
 stopbits=serial.STOPBITS_ONE,

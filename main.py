@@ -51,7 +51,7 @@ def test(model, device, test_loader):
 
 
 
-DATASET1_PATH = "datasets/DanilDatasetV1.pickle"
+DATASET1_PATH = "datasets/BigDataset3Class.pickle"
 #DATASET2_PATH = "datasets/VladDatasetV2.pickle"
 TRAIN_PART = 0.7
 
@@ -78,15 +78,15 @@ def main():
     device = torch.device('cuda')
     kwargs = {'num_workers': 1, 'pin_memory': True}
 
-    trainLoader = utils.data.DataLoader(trainDataset, shuffle=True, batch_size=8, **kwargs)
-    testLoader = utils.data.DataLoader(testDataset, shuffle=False, batch_size=16, **kwargs)
+    trainLoader = utils.data.DataLoader(trainDataset, shuffle=True, batch_size=32, **kwargs)
+    testLoader = utils.data.DataLoader(testDataset, shuffle=False, batch_size=64, **kwargs)
     #test2Loader = utils.data.DataLoader(dataset2, shuffle=False, batch_size=8, **kwargs)
 
     model = Conv1Net().to(device)
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = optim.Adam(model.parameters(), lr=4e-4)
     #optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.8, nesterov=True)
 
-    for epoch in range(1, 11):
+    for epoch in range(1, 16):
         train(model, device, trainLoader, optimizer, epoch)
         test(model, device, testLoader)
     #print("TEST V2 --------------------")
