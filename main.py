@@ -77,52 +77,30 @@ def prepareDataset( dataset_path,
     #   возвращаем два датасета и статистику по тренировочному
     return trainDataset, testDataset, train_mean, train_std
 
-DATASET1_PATH = "datasets/BigDataset5Class.pickle"
-#DATASET2_PATH = "datasets/VladDatasetV2.pickle"
-TRAIN_PART = 0.7
+DATASET_PATH = "datasets/BigDataset5Class.pickle"
+VALIDATION_DATASET_PATH = "datasets/BigDataset_Validation5Class.pickle"
 
 def main():
-
-    '''
-    dataset = HackatonDataset.Load(DATASET1_PATH, transform=Transforms.AddNoise(0.035))
-    #dataset2 = HackatonDataset.Load(DATASET2_PATH)
-
-    dataToAnalyze = np.transpose(dataset.data, (1, 0, 2)).reshape(8, -1)
-
-    mean = np.mean(dataToAnalyze, axis=-1)
-    std = np.std(dataToAnalyze, axis=-1)
-
-    dataset.data -= np.expand_dims(mean, 1)
-    dataset.data /= np.expand_dims(std, 1)
-    #dataset2.data -= np.expand_dims(mean, 1)
-    #dataset2.data /= np.expand_dims(std, 1)
-
-    #print( np.mean(dataset2.data, axis=-1) )
-    #print( np.std(dataset2.data, axis=-1) )
-
-    trainDataset = utils.data.Subset(dataset, range(0, int(0.7 * len(dataset))) )
-    testDataset = utils.data.Subset(dataset, range(int(0.7 * len(dataset)), len(dataset)))
-    '''
-
-    trainDataset, testDataset, train_mean, train_std = prepareDataset(DATASET1_PATH, 0.7)
-    # Это потом должно делаться с помощью трансформов!
-    '''trainDataset.data -= np.expand_dims(train_mean, 1)
-    trainDataset.data /= np.expand_dims(train_std, 1)
-    testDataset.data -= np.expand_dims(train_mean, 1)
-    testDataset.data /= np.expand_dims(train_std, 1)'''
+    trainDataset, testDataset, train_mean, train_std = prepareDataset(DATASET_PATH, 0.7)
     trainDataset.transform = Transforms.Compose([
-        Transforms.Normalize(train_mean, train_std),
-        Transforms.AddNoise(0.035),
-        Transforms.ShiftAndCrop(100,100)
+        Transforms.Normalize(train_mean, train_std)
+        #Transforms.AddNoise(0.035),
+        #Transforms.ShiftAndCrop(100,100)
     ])
     testDataset.transform = Transforms.Normalize(train_mean, train_std)
+    validationDataset = HackatonDataset.Load(VALIDATION_DATASET_PATH)
+
+    val_mean = np.mean(validationDataset.data, axis = -1)
+    val_std = np.std(validationDataset.data, axis = -1)
+    validationDataset.data -= np.expand_dims(val_mean, axis = -1)
+    validationDataset.data /= np.expand_dims(val_std, axis = -1)
 
     device = torch.device('cuda')
     kwargs = {'num_workers': 1, 'pin_memory': True}
 
     trainLoader = utils.data.DataLoader(trainDataset, shuffle=True, batch_size=64, **kwargs)
     testLoader = utils.data.DataLoader(testDataset, shuffle=False, batch_size=64, **kwargs)
-    #test2Loader = utils.data.DataLoader(dataset2, shuffle=False, batch_size=8, **kwargs)
+    validationLoader = utils.data.DataLoader(validationDataset, shuffle=False, batch_size=16, **kwargs)
 
     model = Conv1Net().to(device)
     optimizer = optim.Adam(model.parameters(), lr=4e-4)
@@ -131,8 +109,8 @@ def main():
     for epoch in range(1, 16):
         train(model, device, trainLoader, optimizer, epoch)
         test(model, device, testLoader)
-    #print("TEST V2 --------------------")
-    #test(model, device, test2Loader)
+    print("TEST ON VALIDATION")
+    test(model, device, validationLoader)
 
 if __name__ == '__main__':
     main()
