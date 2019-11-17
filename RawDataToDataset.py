@@ -4,13 +4,14 @@ import pickle
 import numpy as np
 from RawDataOperation import RawDataReader
 from HackatonDataset import HackatonDataset
+from Labels import Labels
 
 DATASETS_DIR = "datasets/"
 
 def readAll(dir):
     for root, dr, files in os.walk(dir):
-        g_data = np.empty(shape=(len(files), 8, 2000))
-        g_label = np.empty(shape=(len(files)))
+        g_data = np.empty(shape=(len(files), 8, 2000), dtype=float)
+        g_label = np.empty(shape=(len(files)), dtype=int)
 
         i = 0
         for file in files:
@@ -18,7 +19,13 @@ def readAll(dir):
             data = RawDataReader(fname=path).read()
 
             g_data[i] = np.array(data).reshape((len(data) // 8, 8)).transpose()
-            g_label[i] = 0 if "turn_left" in os.path.splitext(file)[0] else 1
+            for name, label in Labels.all.items():
+                if name in file:
+                    g_label[i] = label
+                    print("File: {} Label: {}".format(
+                        file, label
+                    ))
+                    break
             i += 1
 
         data = {
@@ -33,6 +40,7 @@ parser.add_argument('file', type=str, metavar='path',
 args = parser.parse_args()
 
 data = readAll(args.file)
+
 #   Перемешиваем датасет
 permutationIndexes = np.random.permutation(len(data["data"]))
 permutedData = {

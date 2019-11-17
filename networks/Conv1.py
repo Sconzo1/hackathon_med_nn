@@ -19,7 +19,7 @@ class Conv1Net(nn.Module):
 
         self.fc1 = nn.Linear(in_features=64*62, out_features=128)
         self.fc2 = nn.Linear(in_features=128, out_features=128)
-        self.fc3 = nn.Linear(in_features=128, out_features=1)
+        self.fc3 = nn.Linear(in_features=128, out_features=3)
 
     """
     x - Tensor[batch_size, 8, 2000]
@@ -33,5 +33,5 @@ class Conv1Net(nn.Module):
         x = x.view(-1, 64*62)
         x = F.relu( self.fc1(x) )
         x = F.relu( self.fc2(x) )
-        x = self.fc3(x)
+        x = F.log_softmax( self.fc3(x), dim = 1 )
         return x

@@ -2,20 +2,8 @@ from RawDataOperation import RawDataReader, RawDataWriter, get_curloc_time_UTC
 import serial
 import struct
 import time
+from Labels import Labels
 
-class Labels:
-    TurnLeft = "turn_left"
-    TurnRight = "turn_right"
-    Idle = "idle"
-    TurnUp = "turn_up"
-    TurnDown = "turn_down"
-    {
-        "turn_left" :   0,
-        "turn_right" :  1,
-        "idle" :        2,
-        "turn_up" :     3,
-        "turn_down" :   4
-    }
 #   Текущая метка данных - куда поворачиваем кисть
 CURRENT_LABEL = Labels.TurnRight
 
